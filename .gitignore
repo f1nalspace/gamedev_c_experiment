@@ -4,3 +4,4 @@
 
 *.db
 *.opendb
+.vs\

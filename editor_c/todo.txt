@@ -1,0 +1,14 @@
+Required Optimizations:
+- Align all structs properly, order does matter, 4 byte alignment
+- Support alignent in memory blocks as well, 4 byte alignment by default
+
+Editor:
+- Adding and removing tiles (Tiles must be stored sparsely, hashed by index, Fast to iterate over)
+	* Ideas: Just use arrays and a index table with just pointers to tiles
+- Loading and saving a tilemap with only used tiles to disk
+
+UI:
+- Simple text drawing using STB_truetype
+
+Debug:
+- Add performance measurement block timing mechnism
