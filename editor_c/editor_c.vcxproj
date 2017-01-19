@@ -144,7 +144,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="editor.cpp" />
-    <ClCompile Include="win32_opengl.cpp" />
+    <ClCompile Include="win32_render_opengl.cpp" />
     <ClCompile Include="win32_editor.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -157,7 +157,7 @@
     <ClInclude Include="engine_render.h" />
     <ClInclude Include="editor_internal.h" />
     <ClInclude Include="engine_types.h" />
-    <ClInclude Include="win32_opengl.h" />
+    <ClInclude Include="win32_render_opengl.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -2,14 +2,15 @@
 #include <gl\gl.h>
 
 #include "engine_platform.h"
+#include "win32_render_opengl.h"
 
 #include "editor.h"
 
-// WGL definitions
+// NOTE(final): WGL definitions
 #define PFNWGLSWAPINTERVALPROC(name) BOOL name(int value)
 typedef PFNWGLSWAPINTERVALPROC(wgl_swap_interval);
 
-// Global variables
+// NOTE(final): Global variables
 global_variable B32 globalRunning;
 global_variable wgl_swap_interval *wglSwapIntervalEXT;
 
@@ -71,7 +72,7 @@ internal void Win32LoadWGLExtensions(void) {
 	}
 }
 
-internal B32 Win32LoadOpenGL(HDC deviceContext, HGLRC *renderingContext) {
+internal B32 Win32OpenGLLoad(HDC deviceContext, HGLRC *renderingContext) {
 	Win32LoadWGLExtensions();
 
 	if (!Win32SetPixelFormat(deviceContext)) {
@@ -92,14 +93,14 @@ internal B32 Win32LoadOpenGL(HDC deviceContext, HGLRC *renderingContext) {
 		wglSwapIntervalEXT(1);
 	}
 
-	OpenGLInit();
+	Win32RenderOpenGLInit();
 
 	*renderingContext = rc;
 
 	return 1;
 }
 
-internal void Win32ReleaseOpenGL(HGLRC *renderingContext) {
+internal void Win32OpenGLRelease(HGLRC *renderingContext) {
 	wglMakeCurrent(NULL, NULL);
 	if (renderingContext) {
 		wglDeleteContext(*renderingContext);
@@ -114,7 +115,6 @@ internal void Win32ProcessKeyboardMessage(ButtonState *newState, B32 isDown) {
 	}
 }
 internal void Win32ProcessMessages(InputState *input) {
-	// Process messages
 	MSG msg;
 	while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
 		switch (msg.message) {
@@ -220,12 +220,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
 	}
 
 	HGLRC renderingContext = 0;
-	if (!Win32LoadOpenGL(deviceContext, &renderingContext)) {
+	if (!Win32OpenGLLoad(deviceContext, &renderingContext)) {
 		return -1;
 	}
 
 	AppState appState = {};
-	appState.renderStorageSize = MAX_RENDER_COMMAND_COUNT * sizeof(RenderCommand);
+	appState.renderStorageSize = RENDER_MAX_COMMAND_COUNT * sizeof(RenderCommand);
 	appState.persistentStorageSize = MegaBytes(500LL);
 	appState.transientStorageSize = MegaBytes(32LL);
 
@@ -241,11 +241,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
 	appState.persistentStorageBase = (U8 *)appMemoryBase + appState.renderStorageSize;
 	appState.transientStorageBase = (U8 *)appMemoryBase + appState.renderStorageSize + appState.persistentStorageSize;
 
-	MemoryBlock renderMemory = CreateMemoryBlock(appState.renderStorageBase, appState.renderStorageSize);
+	MemoryBlock renderMemory = MemoryBlockCreate(appState.renderStorageBase, appState.renderStorageSize);
 
 	RenderState renderState = {};
-	renderState.commandCapacity = MAX_RENDER_COMMAND_COUNT;
-	renderState.commands = PushArray(&renderMemory, RenderCommand, MAX_RENDER_COMMAND_COUNT);
+	renderState.commandCapacity = RENDER_MAX_COMMAND_COUNT;
+	renderState.commands = PushArray(&renderMemory, RenderCommand, RENDER_MAX_COMMAND_COUNT);
 
 	InputState input[2] = {};
 	InputState *newInput = &input[0];
@@ -260,8 +260,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
 		renderState.screenSize.w = (windowSize.right - windowSize.left) + 1;
 		renderState.screenSize.h = (windowSize.bottom - windowSize.top) + 1;
 
-		// NOTE: Reset but preserve keyboard button state from previous frame
-		// NOTE: Reset mouse states from previous frame
+		// NOTE(final): Reset but preserve keyboard button state from previous frame
+		// NOTE(final): Reset mouse states from previous frame
 		{
 			KeyboardState *oldKeyboardState = &oldInput->keyboard;
 			KeyboardState *newKeyboardState = &newInput->keyboard;
@@ -272,17 +272,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
 			newInput->mouse.wheelDelta = 0;
 		}
 
-		// NOTE: Process window/keyboard messages
+		// NOTE(final): Process window/keyboard messages
 		Win32ProcessMessages(newInput);
 
-		// NOTE: Mouse handling
+		// NOTE(final): Mouse handling
 		{
 			POINT mousePos;
 			GetCursorPos(&mousePos);
 			ScreenToClient(windowHandle, &mousePos);
 			S32 mouseX = mousePos.x;
 			S32 mouseY = (renderState.screenSize.h - 1) - mousePos.y;
-			newInput->mouse.mousePos = Unproject(&renderState, mouseX, mouseY);
+			newInput->mouse.mousePos = RenderUnproject(&renderState, mouseX, mouseY);
 
 			DWORD WinButtonID[MouseButton_Count] =
 			{
@@ -299,13 +299,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
 			}
 		}
 
-		// NOTE: Update and render editor
-		UpdateAndRenderEditor(&appState, &renderState, newInput);
+		// NOTE(final): Update and render editor
+		EditorUpdateAndRender(&appState, &renderState, newInput);
 
-		// NOTE: Render frame
-		Win32OpenGLRender(&renderState);
+		// NOTE(final): Render frame
+		Win32RenderOpenGL(&renderState);
 
-		// NOTE: Present frame
+		// NOTE(final): Present frame
 		SwapBuffers(deviceContext);
 
 		// NOTE(final): Reset render commands for next frame
@@ -315,7 +315,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
 		SwapPtr(InputState, newInput, oldInput);
 	}
 
-	Win32ReleaseOpenGL(&renderingContext);
+	Win32OpenGLRelease(&renderingContext);
 
 	ReleaseDC(windowHandle, deviceContext);
 	DestroyWindow(windowHandle);

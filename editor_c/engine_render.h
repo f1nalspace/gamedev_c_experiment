@@ -11,7 +11,7 @@ enum RenderCommandType {
 
 // FIXME(final): Make the number of lines dynamic, right now its set to a ridiculous amount
 constant U32 MAX_RENDER_LINES_VERTEX_COUNT = 256 * 2;
-struct LinesRenderCommand {
+struct RenderCommandLines {
 	Vec2f verts[MAX_RENDER_LINES_VERTEX_COUNT];
 	U32 vertexCount;
 	B32 isChained;
@@ -24,11 +24,11 @@ struct RenderCommand {
 	Transform transform;
 	Vec4f color;
 	union {
-		LinesRenderCommand lines;
+		RenderCommandLines lines;
 	};
 };
 
-constant U32 MAX_RENDER_COMMAND_COUNT = 1024;
+constant U32 RENDER_MAX_COMMAND_COUNT = 1024;
 struct RenderState {
 	Vec2i screenSize;
 	F32 aspectRatio;
@@ -44,7 +44,7 @@ struct RenderState {
 	U32 commandCount;
 };
 
-inline RenderCommand *AddRenderCommand(RenderState *renderState, RenderCommandType type, const Transform &transform = DefaultTransform()) {
+inline RenderCommand *RenderPushCommand(RenderState *renderState, RenderCommandType type, const Transform &transform = TransformIdentity()) {
 	Assert(renderState->commandCount < renderState->commandCapacity);
 	RenderCommand *result = renderState->commands + renderState->commandCount;
 	*result = {};
@@ -54,14 +54,14 @@ inline RenderCommand *AddRenderCommand(RenderState *renderState, RenderCommandTy
 	return(result);
 }
 
-inline void PushClear(RenderState *renderState, const Vec4f &color = V4(0, 0, 0, 1)) {
-	RenderCommand *command = AddRenderCommand(renderState, RenderCommandType::RenderCommandType_Clear);
+inline void RenderPushClear(RenderState *renderState, const Vec4f &color = V4(0, 0, 0, 1)) {
+	RenderCommand *command = RenderPushCommand(renderState, RenderCommandType::RenderCommandType_Clear);
 	command->color = color;
 }
-inline void PushLines(RenderState *renderState, const Transform &transform, U32 vertexCount, Vec2f *verts, B32 isChained, const Vec4f &color = V4(1,1,1,1), F32 lineWidth = 1.0f) {
+inline void RenderPushLines(RenderState *renderState, const Transform &transform, U32 vertexCount, Vec2f *verts, B32 isChained, const Vec4f &color = V4(1,1,1,1), F32 lineWidth = 1.0f) {
 	Assert(vertexCount > 1);
 	Assert(verts);
-	RenderCommand *command = AddRenderCommand(renderState, RenderCommandType::RenderCommandType_Lines, transform);
+	RenderCommand *command = RenderPushCommand(renderState, RenderCommandType::RenderCommandType_Lines, transform);
 	command->color = color;
 	Assert(vertexCount < ArrayCount(command->lines.verts));
 	command->lines.vertexCount = vertexCount;
@@ -72,7 +72,7 @@ inline void PushLines(RenderState *renderState, const Transform &transform, U32 
 	}
 }
 
-inline Vec2i Project(RenderState *renderState, F32 x, F32 y) {
+inline Vec2i RenderProject(RenderState *renderState, F32 x, F32 y) {
 	Vec2i result;
 	// FIXME(final): This is totally wrong - include the camera scale and offset to fix it
 	result.x = (S32)(x * renderState->areaScale) + renderState->viewportOffset.x;
@@ -80,7 +80,7 @@ inline Vec2i Project(RenderState *renderState, F32 x, F32 y) {
 	return (result);
 }
 
-inline Vec2f Unproject(RenderState *renderState, S32 x, S32 y) {
+inline Vec2f RenderUnproject(RenderState *renderState, S32 x, S32 y) {
 	Vec2f result = {};
 	if (renderState->areaScale > 0) {
 		result.x = (F32)((x - renderState->viewportOffset.x) / renderState->areaScale) - renderState->areaSize.w * 0.5f;
@@ -88,6 +88,3 @@ inline Vec2f Unproject(RenderState *renderState, S32 x, S32 y) {
 	}
 	return (result);
 }
-
-external void OpenGLInit();
-external void Win32OpenGLRender(RenderState *renderState);

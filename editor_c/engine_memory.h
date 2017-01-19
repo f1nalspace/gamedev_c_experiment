@@ -2,7 +2,7 @@
 
 #include "engine_types.h"
 
-// TODO: Handle alignment!
+// TODO(final): Handle alignment!
 
 struct MemoryBlock {
 	void *base;
@@ -22,7 +22,7 @@ enum MemoryFlag {
 	MemoryFlag_Zero = 1 << 0,
 };
 
-#define DefaultMemoryFlags() (MemoryFlag::MemoryFlag_Zero)
+#define MemoryFlagsDefault() (MemoryFlag::MemoryFlag_Zero)
 
 inline void ZeroSize(void *base, memory_size size) {
 	Assert(base);
@@ -36,7 +36,7 @@ inline void ZeroSize(void *base, memory_size size) {
 #define ZeroArray(ptr, count) \
 	ZeroSize(ptr, count*sizeof((ptr)[0]))
 
-inline MemoryBlock CreateMemoryBlock(void *base, memory_size size, MemoryFlag flags = DefaultMemoryFlags()) {
+inline MemoryBlock MemoryBlockCreate(void *base, memory_size size, MemoryFlag flags = MemoryFlagsDefault()) {
 	Assert(base);
 	Assert(size > 0);
 	MemoryBlock result = {};
@@ -48,7 +48,7 @@ inline MemoryBlock CreateMemoryBlock(void *base, memory_size size, MemoryFlag fl
 	return(result);
 }
 
-inline void *__PushSize(MemoryBlock *block, memory_size size, MemoryFlag flags = DefaultMemoryFlags()) {
+inline void *__PushSize(MemoryBlock *block, memory_size size, MemoryFlag flags = MemoryFlagsDefault()) {
 	Assert(block);
 	Assert(size > 0);
 	Assert(block->used + size <= block->size);
@@ -60,20 +60,20 @@ inline void *__PushSize(MemoryBlock *block, memory_size size, MemoryFlag flags =
 	return(result);
 }
 
-inline MemoryBlock CreateMemoryBlockFrom(MemoryBlock *sourceBlock, memory_size size, MemoryFlag flags = DefaultMemoryFlags()) {
+inline MemoryBlock MemoryBlockCreateFrom(MemoryBlock *sourceBlock, memory_size size, MemoryFlag flags = MemoryFlagsDefault()) {
 	void *base = __PushSize(sourceBlock, size);
-	MemoryBlock result = CreateMemoryBlock(base, size, flags);
+	MemoryBlock result = MemoryBlockCreate(base, size, flags);
 	return (result);
 }
 
-inline TemporaryMemory BeginTemporaryMemory(MemoryBlock *parentBlock) {
+inline TemporaryMemory TemporaryMemoryBegin(MemoryBlock *parentBlock) {
 	TemporaryMemory result = {};
 	result.parentBlock = parentBlock;
 	result.used = parentBlock->used;
 	++parentBlock->tempCount;
 	return(result);
 }
-inline void EndTemporaryMemory(TemporaryMemory *tempMemory) {
+inline void TemporaryMemoryEnd(TemporaryMemory *tempMemory) {
 	MemoryBlock *block = tempMemory->parentBlock;
 	Assert(block->used >= tempMemory->used);
 	block->used = tempMemory->used;

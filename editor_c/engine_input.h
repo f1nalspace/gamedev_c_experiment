@@ -46,12 +46,12 @@ struct InputState {
 	MouseState mouse;
 };
 
-inline B32 WasDown(const ButtonState &state)
+inline B32 InputButtonWasDown(const ButtonState &state)
 {
 	B32 result = ((state.halfTransitionCount > 1) || ((state.halfTransitionCount == 1) && (state.endedDown)));
 	return(result);
 }
-inline B32 IsDown(const ButtonState &state)
+inline B32 InputButtonIsDown(const ButtonState &state)
 {
 	B32 result = state.endedDown;
 	return(result);
