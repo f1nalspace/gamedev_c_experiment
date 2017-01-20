@@ -27,10 +27,10 @@ internal Vec2f GetMouseWorld(GameState *gameState, InputState *inputState) {
 }
 
 inline U32 EditorTileComputeIndex(S32 tileX, S32 tileY) {
-	U32 remappedX = tileX + (EDITOR_MAX_TILE_DIMENSION - 1);
-	U32 remappedY = tileY + (EDITOR_MAX_TILE_DIMENSION - 1);
-	S32 fullWidth = EDITOR_MAX_TILE_DIMENSION * 2;
-	U32 tileIndex = remappedY * fullWidth + remappedX;
+	U32 halfDimension = EDITOR_MAX_TILE_DIMENSION / 2;
+	U32 remappedX = tileX + (halfDimension - 1);
+	U32 remappedY = tileY + (halfDimension - 1);
+	U32 tileIndex = remappedY * EDITOR_MAX_TILE_DIMENSION + remappedX;
 	return(tileIndex);
 }
 
@@ -44,8 +44,9 @@ inline Tile *EditorTileGet(GameState *gameState, S32 tileX, S32 tileY) {
 }
 
 internal void EditorTileAdd(GameState *gameState, S32 tileX, S32 tileY) {
-	Assert((tileX >= -(EDITOR_MAX_TILE_DIMENSION - 1) || tileX <= (EDITOR_MAX_TILE_DIMENSION - 1)));
-	Assert((tileY >= -(EDITOR_MAX_TILE_DIMENSION - 1) || tileY <= (EDITOR_MAX_TILE_DIMENSION - 1)));
+	U32 halfDimension = EDITOR_MAX_TILE_DIMENSION / 2;
+	Assert((tileX >= -((S32)halfDimension - 1) || tileX <= ((S32)halfDimension - 1)));
+	Assert((tileY >= -((S32)halfDimension - 1) || tileY <= ((S32)halfDimension - 1)));
 	U32 tileIndex = EditorTileComputeIndex(tileX, tileY);
 	if (!gameState->tilesMap[tileIndex]) {
 		Tile *tile = gameState->tilesPool.PopBack();
@@ -57,8 +58,9 @@ internal void EditorTileAdd(GameState *gameState, S32 tileX, S32 tileY) {
 }
 
 internal void EditorTileRemove(GameState *gameState, S32 tileX, S32 tileY) {
-	Assert((tileX >= -(EDITOR_MAX_TILE_DIMENSION - 1) || tileX <= (EDITOR_MAX_TILE_DIMENSION - 1)));
-	Assert((tileY >= -(EDITOR_MAX_TILE_DIMENSION - 1) || tileY <= (EDITOR_MAX_TILE_DIMENSION - 1)));
+	U32 halfDimension = EDITOR_MAX_TILE_DIMENSION / 2;
+	Assert((tileX >= -((S32)halfDimension - 1) || tileX <= ((S32)halfDimension - 1)));
+	Assert((tileY >= -((S32)halfDimension - 1) || tileY <= ((S32)halfDimension - 1)));
 	U32 tileIndex = EditorTileComputeIndex(tileX, tileY);
 	if (gameState->tilesMap[tileIndex]) {
 		Tile *tile = gameState->tilesMap[tileIndex];
