@@ -7,10 +7,10 @@ enum RenderCommandType {
 
 	RenderCommandType_Clear,
 	RenderCommandType_Lines,
+	RenderCommandType_Polygon,
 };
 
-// FIXME(final): Make the number of lines dynamic, right now its set to a ridiculous amount
-constant U32 MAX_RENDER_LINES_VERTEX_COUNT = 256 * 2;
+constant U32 MAX_RENDER_LINES_VERTEX_COUNT = 16 * 2;
 struct RenderCommandLines {
 	Vec2f verts[MAX_RENDER_LINES_VERTEX_COUNT];
 	U32 vertexCount;
@@ -18,13 +18,20 @@ struct RenderCommandLines {
 	F32 lineWidth;
 };
 
+constant U32 MAX_RENDER_POLGYON_VERTEX_COUNT = 16;
+struct RenderCommandPolygon {
+	Vec2f verts[MAX_RENDER_POLGYON_VERTEX_COUNT];
+	U32 vertexCount;
+};
+
 struct RenderCommand {
-	RenderCommandType type;
+	U8 type;
 	// FIXME(final): Transform should be the final modelview matrix, the render itself should never require a Transform!
 	Transform transform;
 	Vec4f color;
 	union {
 		RenderCommandLines lines;
+		RenderCommandPolygon polygon;
 	};
 };
 
@@ -63,12 +70,25 @@ inline void RenderPushLines(RenderState *renderState, const Transform &transform
 	Assert(verts);
 	RenderCommand *command = RenderPushCommand(renderState, RenderCommandType::RenderCommandType_Lines, transform);
 	command->color = color;
-	Assert(vertexCount < ArrayCount(command->lines.verts));
-	command->lines.vertexCount = vertexCount;
-	command->lines.isChained = isChained;
-	command->lines.lineWidth = lineWidth;
-	for (U32 pointIndex = 0; pointIndex < vertexCount; ++pointIndex) {
-		command->lines.verts[pointIndex] = verts[pointIndex];
+	RenderCommandLines *lines = &command->lines;
+	Assert(vertexCount <= ArrayCount(lines->verts));
+	lines->vertexCount = vertexCount;
+	lines->isChained = isChained;
+	lines->lineWidth = lineWidth;
+	for (U32 vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex) {
+		lines->verts[vertexIndex] = verts[vertexIndex];
+	}
+}
+inline void RenderPushPolygon(RenderState *renderState, const Transform &transform, U32 vertexCount, Vec2f *verts, const Vec4f &color = V4(1, 1, 1, 1)) {
+	Assert(vertexCount > 2);
+	Assert(verts);
+	RenderCommand *command = RenderPushCommand(renderState, RenderCommandType::RenderCommandType_Polygon, transform);
+	command->color = color;
+	RenderCommandPolygon *polygon = &command->polygon;
+	Assert(vertexCount <= ArrayCount(polygon->verts));
+	polygon->vertexCount = vertexCount;
+	for (U32 vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex) {
+		polygon->verts[vertexIndex] = verts[vertexIndex];
 	}
 }
 

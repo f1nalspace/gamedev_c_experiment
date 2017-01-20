@@ -29,6 +29,9 @@
       <Filter>editor</Filter>
     </ClInclude>
     <ClInclude Include="win32_render_opengl.h" />
+    <ClInclude Include="engine_list.h">
+      <Filter>engine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="win32_editor.cpp" />

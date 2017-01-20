@@ -300,7 +300,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
 		}
 
 		// NOTE(final): Update and render editor
-		EditorUpdateAndRender(&appState, &renderState, newInput);
+		GameUpdateAndRender(&appState, &renderState, newInput);
 
 		// NOTE(final): Render frame
 		Win32RenderOpenGL(&renderState);

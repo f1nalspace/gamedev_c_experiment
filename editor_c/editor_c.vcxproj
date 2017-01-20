@@ -149,6 +149,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="editor.h" />
+    <ClInclude Include="engine_list.h" />
     <ClInclude Include="engine_intrinsics.h" />
     <ClInclude Include="engine_math.h" />
     <ClInclude Include="engine_input.h" />

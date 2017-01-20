@@ -40,6 +40,7 @@ external void Win32RenderOpenGL(RenderState *renderState) {
 				glClearColor(command->color.r, command->color.g, command->color.b, command->color.a);
 				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			}; break;
+
 			case RenderCommandType::RenderCommandType_Lines:
 			{
 				RenderCommandLines *lines = &command->lines;
@@ -53,6 +54,19 @@ external void Win32RenderOpenGL(RenderState *renderState) {
 				}
 				glEnd();
 				glLineWidth(1.0f);
+			}; break;
+
+			case RenderCommandType::RenderCommandType_Polygon:
+			{
+				RenderCommandPolygon *polygon = &command->polygon;
+				glLoadMatrixf(&modelviewMat.m[0]);
+				glColor4fv(&command->color.p[0]);
+				glBegin(GL_POLYGON);
+				for (U32 vertexIndex = 0; vertexIndex < polygon->vertexCount; ++vertexIndex) {
+					Vec2f *v = polygon->verts + vertexIndex;
+					glVertex2fv(&v->p[0]);
+				}
+				glEnd();
 			}; break;
 		}
 	}
