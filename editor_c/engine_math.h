@@ -21,6 +21,8 @@ union Vec2i {
 	};
 	S32 p[2];
 };
+StaticAlignmentAssert(Vec2i);
+
 union Vec2f {
 	struct {
 		F32 x, y;
@@ -33,6 +35,8 @@ union Vec2f {
 	};
 	F32 p[2];
 };
+StaticAlignmentAssert(Vec2f);
+
 union Vec3f {
 	struct {
 		F32 x, y, z;
@@ -61,6 +65,8 @@ union Vec3f {
 	};
 	F32 p[3];
 };
+StaticAlignmentAssert(Vec3f);
+
 union Vec4f {
 	struct {
 		union {
@@ -101,6 +107,7 @@ union Vec4f {
 	};
 	F32 p[4];
 };
+StaticAlignmentAssert(Vec4f);
 
 union Mat2f {
 	struct {
@@ -109,6 +116,7 @@ union Mat2f {
 	};
 	F32 m[4];
 };
+StaticAlignmentAssert(Mat2f);
 
 union Mat4f {
 	struct {
@@ -119,12 +127,14 @@ union Mat4f {
 	};
 	F32 m[16];
 };
+StaticAlignmentAssert(Mat4f);
 
 struct Transform {
 	Vec2f pos;
 	Vec2f scale;
 	Mat2f rot;
 };
+StaticAlignmentAssert(Transform);
 
 // Scalar functions
 

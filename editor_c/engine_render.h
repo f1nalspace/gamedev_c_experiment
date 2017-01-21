@@ -9,6 +9,7 @@ enum RenderCommandType {
 	RenderCommandType_Lines,
 	RenderCommandType_Polygon,
 };
+StaticEnumAssert(RenderCommandType);
 
 constant U32 MAX_RENDER_LINES_VERTEX_COUNT = 16 * 2;
 struct RenderCommandLines {
@@ -17,15 +18,17 @@ struct RenderCommandLines {
 	B32 isChained;
 	F32 lineWidth;
 };
+StaticAlignmentAssert(RenderCommandLines);
 
 constant U32 MAX_RENDER_POLGYON_VERTEX_COUNT = 16;
 struct RenderCommandPolygon {
 	Vec2f verts[MAX_RENDER_POLGYON_VERTEX_COUNT];
 	U32 vertexCount;
 };
+StaticAlignmentAssert(RenderCommandPolygon);
 
 struct RenderCommand {
-	U8 type;
+	RenderCommandType type;
 	// FIXME(final): Transform should be the final modelview matrix, the render itself should never require a Transform!
 	Transform transform;
 	Vec4f color;
@@ -34,6 +37,7 @@ struct RenderCommand {
 		RenderCommandPolygon polygon;
 	};
 };
+StaticAlignmentAssert(RenderCommand);
 
 constant U32 RENDER_MAX_COMMAND_COUNT = 1024;
 struct RenderState {

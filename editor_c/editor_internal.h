@@ -13,6 +13,7 @@ struct TransientState {
 struct Tile : LinkedListItem {
 	Vec2i tilePos;
 };
+StaticAlignmentAssert(Tile);
 
 enum EditorDrawType {
 	EditorDrawType_None,
@@ -33,7 +34,7 @@ struct GameState {
 	Vec2i areaTileCount;
 	Vec2f areaSize;
 
-	U8 activeDrawType;
+	EditorDrawType activeDrawType;
 	LinkedList<Tile> tilesPool;
 	LinkedList<Tile> usedTiles;
 	Tile *tilesMap[EDITOR_MAX_TILE_MAP_COUNT];

@@ -216,8 +216,7 @@ external void GameUpdateAndRender(AppState *appState, RenderState *renderState, 
 		V2(tileSize, -tileSize) * 0.5f,
 	};
 
-	// NOTE(final): Render grid
-	// It should render the necessary lines to fill out the scaled/panned game area only
+	// NOTE(final): Render grid (It should render the necessary lines to fill out the scaled/panned game area only)
 	Vec2f scaledHalfGridSize = gameState->areaSize * 0.5f * (1.0f / gameState->cameraScale);
 
 	Vec4f gridLineColor = V4(0.55f, 0.55f, 0.55f, 1);
@@ -244,7 +243,7 @@ external void GameUpdateAndRender(AppState *appState, RenderState *renderState, 
 	TemporaryMemory tempMemory = TemporaryMemoryBegin(&tranState->transientMemory);
 	Vec2f *gridLinePoints = PushArray(&tranState->transientMemory, Vec2f, Max(lineCountX, lineCountY) * 2);
 
-	// Horizontal lines
+	// NOTE(final): Draw horizontal grid lines
 	for (U32 verticalLineIndex = 0; verticalLineIndex < lineCountY; ++verticalLineIndex) {
 		F32 yPos = verticalLineIndex * tileSize;
 		gridLinePoints[verticalLineIndex * 2 + 0] = V2(gridSize.x, yPos);
@@ -257,7 +256,7 @@ external void GameUpdateAndRender(AppState *appState, RenderState *renderState, 
 		RenderPushLines(renderState, gridTransform, vertexCount, gridLinePoints + lineVertexStartIndex, false, gridLineColor, gridLineWidth);
 	}
 
-	// Vertical lines
+	// NOTE(final): Draw vertical grid lines
 	for (U32 horizontalLineIndex = 0; horizontalLineIndex < lineCountX; ++horizontalLineIndex) {
 		F32 xPos = horizontalLineIndex * tileSize;
 		gridLinePoints[horizontalLineIndex * 2 + 0] = V2(xPos, gridSize.y);
@@ -272,7 +271,7 @@ external void GameUpdateAndRender(AppState *appState, RenderState *renderState, 
 
 	TemporaryMemoryEnd(&tempMemory);
 
-	// NOTE(final): Draw mouse tile
+	// NOTE(final): Draw mouse hover tile
 	Transform mouseTileTransform = TransformMult(TransformMakeTranslation(mouseTilePos), gameState->cameraTransform);
 	RenderPushLines(renderState, mouseTileTransform, ArrayCount(tileBounds), tileBounds, true, V4(1, 1, 0, 1));
 }

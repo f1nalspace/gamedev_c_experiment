@@ -5,5 +5,6 @@
 *.db
 *.opendb
 .vs/
-/editor_c/x64/Debug
-/x64/Debug
+x64
+editor_c/x64/
+editor_c/x64/

@@ -31,8 +31,19 @@ typedef size_t memory_size;
 
 #ifdef _DEBUG
 #define Assert(exp) if(!(exp)) {*(int *)0 = 0;}
+#define StaticAssert_(exp, line) \
+	int __static_assert_##line(int static_assert_failed[(exp)?1:-1])
+#define StaticAssert(exp) \
+	StaticAssert_(exp, __LINE__)
+#define StaticAlignmentAssert(type) \
+	StaticAssert_(sizeof(type) % 4 == 0, __LINE__)
+#define StaticEnumAssert(type) \
+	StaticAssert_(sizeof(type) == 4, __LINE__)
 #else
 #define Assert(exp)
+#define StaticAssert(exp, name)
+#define StaticAlignmentAssert(type)
+#define StaticEnumAssert(type)
 #endif
 
 #define ArrayCount(Array) (sizeof(Array) / sizeof((Array)[0]))

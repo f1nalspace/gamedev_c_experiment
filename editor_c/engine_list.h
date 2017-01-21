@@ -5,6 +5,7 @@
 struct LinkedListItem {
 	LinkedListItem *prev, *next;
 };
+StaticAlignmentAssert(LinkedListItem);
 
 template <typename T>
 struct LinkedList : LinkedListItem {

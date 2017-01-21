@@ -1,10 +1,19 @@
+Notes:
+- Alignment:
+	The vc++ compiler fully aligns all structs automatically.
+	There is a "Struct Member Alignment" in the C++ Compiler-Settings.
+
+	This should be enabled sometimes to ensure that contigous used structs are aligned properly -> See: StaticAlignmentAssert
+
+	B32 is simple a bool, forced to be 4 byte instead of 1 byte to ensure alignment.
+
+	To force alignment for a structure to a specific boundary use:
+	#pragma pack(1 or 2 or 4 or 8) and #pragma pack(0) around the struct.
+
 Required Optimizations:
-- Align all structs properly, order does matter, 4 byte alignment
 - Support alignent in memory blocks as well, 4 byte alignment by default
 
 Editor:
-- Adding and removing tiles (Tiles must be stored sparsely, hashed by index, Fast to iterate over)
-	* Ideas: Just use arrays and a index table with just pointers to tiles
 - Loading and saving a tilemap with only used tiles to disk
 
 UI:
