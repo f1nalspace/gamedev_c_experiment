@@ -13,7 +13,9 @@ constant F32 FLOAT_TOLERANCE = 0.00001f;
 #define Max(a, b) ((a) > (b) ? (a) : (b))
 #define Sign(v) ((v) < 0 ?  -1 : 1)
 
-union Vec2i {
+/* Structures for Vector, Matrix, etc. */
+
+typedef union {
 	struct {
 		S32 x, y;
 	};
@@ -21,10 +23,10 @@ union Vec2i {
 		S32 w, h;
 	};
 	S32 p[2];
-};
+} Vec2i;
 StaticAlignmentAssert(Vec2i);
 
-union Vec2f {
+typedef union {
 	struct {
 		F32 x, y;
 	};
@@ -35,10 +37,10 @@ union Vec2f {
 		F32 w, h;
 	};
 	F32 p[2];
-};
+} Vec2f;
 StaticAlignmentAssert(Vec2f);
 
-union Vec3f {
+typedef union {
 	struct {
 		F32 x, y, z;
 	};
@@ -65,10 +67,10 @@ union Vec3f {
 		Vec2f vw;
 	};
 	F32 p[3];
-};
+} Vec3f;
 StaticAlignmentAssert(Vec3f);
 
-union Vec4f {
+typedef union {
 	struct {
 		union {
 			Vec3f xyz;
@@ -107,19 +109,19 @@ union Vec4f {
 		Vec2f zw;
 	};
 	F32 p[4];
-};
+} Vec4f;
 StaticAlignmentAssert(Vec4f);
 
-union Mat2f {
+typedef union {
 	struct {
 		Vec2f col1;
 		Vec2f col2;
 	};
 	F32 m[4];
-};
+} Mat2f;
 StaticAlignmentAssert(Mat2f);
 
-union Mat4f {
+typedef union {
 	struct {
 		Vec4f col1;
 		Vec4f col2;
@@ -127,43 +129,40 @@ union Mat4f {
 		Vec4f col4;
 	};
 	F32 m[16];
-};
+} Mat4f;
 StaticAlignmentAssert(Mat4f);
 
-struct Transform {
+typedef struct {
 	Vec2f pos;
 	Vec2f scale;
 	Mat2f rot;
-};
+} Transform;
 StaticAlignmentAssert(Transform);
 
-union AABB {
+typedef union {
 	struct {
 		Vec2f min, max;
 	};
 	Vec2f e[2];
-};
+} AABB;
 StaticAlignmentAssert(AABB);
 
-// Scalar functions
+/* Scalar */
 
 inline B32 ScalarEquals(F32 a, F32 b, F32 tolerance = FLOAT_TOLERANCE) {
 	F32 v = Abs(a - b);
 	B32 result = v < tolerance;
 	return (result);
 }
-
 inline B32 ScalarIsGreater(F32 a, F32 b, F32 tolerance = FLOAT_TOLERANCE) {
 	F32 v = a - b;
 	B32 result = v > tolerance;
 	return (result);
 }
-
 inline F32 ScalarLerp(F32 a, F32 t, F32 b) {
 	F32 result = (1.0f - t) * a + t * b;
 	return(result);
 }
-
 inline F32 ScalarClamp(F32 value, F32 min, F32 max) {
 	F32 result = value;
 	if (result < min) {
@@ -173,11 +172,12 @@ inline F32 ScalarClamp(F32 value, F32 min, F32 max) {
 	}
 	return(result);
 }
-
 inline F32 ScalarClamp01(F32 value) {
 	F32 result = ScalarClamp(value, 0.0f, 1.0f);
 	return(result);
 }
+
+/* Trigonometry */
 
 inline F32 DegreeToRadians32(F32 degree) {
 	F32 result = degree * DEG2RAD32;
@@ -189,7 +189,7 @@ inline F32 RadiansToDegree32(F32 radians) {
 	return(result);
 }
 
-// Vector functions
+/* Vec2i */
 
 inline Vec2i V2i(S32 x, S32 y) {
 	Vec2i result;
@@ -200,6 +200,8 @@ inline Vec2i V2i(S32 x, S32 y) {
 inline Vec2i V2i() {
 	return V2i(0, 0);
 }
+
+/* Vec2f */
 
 inline Vec2f V2(F32 x, F32 y) {
 	Vec2f result;
@@ -214,43 +216,9 @@ inline Vec2f V2() {
 	return V2(0, 0);
 }
 
-inline Vec3f V3(F32 x, F32 y, F32 z) {
-	Vec3f result;
-	result.x = x;
-	result.y = y;
-	result.z = z;
-	return(result);
-}
-inline Vec3f V3(F32 xyz) {
-	return V3(xyz, xyz, xyz);
-}
-inline Vec3f V3() {
-	return V3(0, 0, 0);
-}
-
-inline Vec4f V4(F32 x, F32 y, F32 z, F32 w = 1.0f) {
-	Vec4f result;
-	result.x = x;
-	result.y = y;
-	result.z = z;
-	result.w = w;
-	return(result);
-}
-inline Vec4f V4() {
-	return V4(0, 0, 0, 1);
-}
-
 inline B32 Vec2Equals(const Vec2f &a, const Vec2f &b, F32 tolerance = FLOAT_TOLERANCE) {
 	B32 result = ScalarEquals(a.x, b.x, tolerance) &&
 		ScalarEquals(a.y, b.y, tolerance);
-	return (result);
-}
-
-inline B32 Vec4Equals(const Vec4f &a, const Vec4f &b, F32 tolerance = FLOAT_TOLERANCE) {
-	B32 result = ScalarEquals(a.x, b.x, tolerance) &&
-		ScalarEquals(a.y, b.y, tolerance) &&
-		ScalarEquals(a.z, b.z, tolerance) &&
-		ScalarEquals(a.w, b.w, tolerance);
 	return (result);
 }
 
@@ -259,21 +227,39 @@ inline F32 Vec2Dot(const Vec2f &a, const Vec2f &b) {
 	return(result);
 }
 
-inline Vec2f operator*(F32 a, const Vec2f &b) {
+inline Vec2f Vec2Add(Vec2f a, Vec2f b) {
 	Vec2f result;
-	result.x = a * b.x;
-	result.y = a * b.y;
+	result.x = a.x + b.x;
+	result.y = a.y + b.y;
+	return(result);
+}
+inline Vec2f Vec2Sub(Vec2f a, Vec2f b) {
+	Vec2f result;
+	result.x = a.x - b.x;
+	result.y = a.y - b.y;
+	return(result);
+}
+inline Vec2f Vec2MultScalar(const Vec2f &v, F32 scalar) {
+	Vec2f result;
+	result.x = v.x * scalar;
+	result.y = v.y * scalar;
+	return(result);
+}
+
+/* Vec2f overloaded operators */
+
+inline Vec2f operator*(F32 a, const Vec2f &b) {
+	Vec2f result = Vec2MultScalar(b, a);
 	return(result);
 }
 inline Vec2f operator*(const Vec2f &a, F32 b) {
-	Vec2f result = b * a;
+	Vec2f result = Vec2MultScalar(a, b);
 	return(result);
 }
 inline Vec2f& operator*=(Vec2f &a, F32 value) {
 	a = value * a;
 	return(a);
 }
-
 inline Vec2f operator-(const Vec2f &a) {
 	Vec2f result;
 	result.x = -a.x;
@@ -281,9 +267,7 @@ inline Vec2f operator-(const Vec2f &a) {
 	return(result);
 }
 inline Vec2f operator+(const Vec2f &a, const Vec2f &b) {
-	Vec2f result;
-	result.x = a.x + b.x;
-	result.y = a.y + b.y;
+	Vec2f result = Vec2Add(a, b);
 	return(result);
 }
 inline Vec2f& operator+=(Vec2f &a, const Vec2f &b) {
@@ -291,9 +275,7 @@ inline Vec2f& operator+=(Vec2f &a, const Vec2f &b) {
 	return(a);
 }
 inline Vec2f operator-(const Vec2f &a, const Vec2f &b) {
-	Vec2f result;
-	result.x = a.x - b.x;
-	result.y = a.y - b.y;
+	Vec2f result = Vec2Sub(a, b);
 	return(result);
 }
 inline Vec2f& operator-=(Vec2f &a, const Vec2f &b) {
@@ -311,25 +293,6 @@ inline Vec2f Vec2MultMat2(const Vec2f &a, const Mat2f &mat) {
 inline Vec2f Vec2MultTransform(const Vec2f &a, const Transform &t) {
 	Vec2f result = Vec2MultMat2(a, t.rot) + t.pos;
 	return(result);
-}
-
-// Vec3f
-
-inline Vec3f operator*(F32 a, const Vec3f &b) {
-	Vec3f result;
-	result.x = a * b.x;
-	result.y = a * b.y;
-	result.z = a * b.z;
-	return(result);
-}
-
-inline Vec3f operator*(const Vec3f &a, F32 b) {
-	Vec3f result = b * a;
-	return(result);
-}
-inline Vec3f& operator*=(Vec3f &a, F32 value) {
-	a = value * a;
-	return(a);
 }
 
 inline Vec2f Vec2Hadamard(const Vec2f &a, const Vec2f &b) {
@@ -375,7 +338,68 @@ inline Vec2f Vec2Max(const Vec2f &a, const Vec2f &b) {
 	return(result);
 }
 
-// Matrix functions
+inline F32 Vec2AxisToAngle(const Vec2f &axis) {
+	F32 result = ATan2(axis.y, axis.x);
+	return(result);
+}
+
+/* Vec3f */
+
+inline Vec3f V3(F32 x, F32 y, F32 z) {
+	Vec3f result;
+	result.x = x;
+	result.y = y;
+	result.z = z;
+	return(result);
+}
+inline Vec3f V3(F32 xyz) {
+	return V3(xyz, xyz, xyz);
+}
+inline Vec3f V3() {
+	return V3(0, 0, 0);
+}
+
+/* Vec3f overloaded operators */
+
+inline Vec3f operator*(F32 a, const Vec3f &b) {
+	Vec3f result;
+	result.x = a * b.x;
+	result.y = a * b.y;
+	result.z = a * b.z;
+	return(result);
+}
+inline Vec3f operator*(const Vec3f &a, F32 b) {
+	Vec3f result = b * a;
+	return(result);
+}
+inline Vec3f& operator*=(Vec3f &a, F32 value) {
+	a = value * a;
+	return(a);
+}
+
+/* Vec4f */
+
+inline Vec4f V4(F32 x, F32 y, F32 z, F32 w = 1.0f) {
+	Vec4f result;
+	result.x = x;
+	result.y = y;
+	result.z = z;
+	result.w = w;
+	return(result);
+}
+inline Vec4f V4() {
+	return V4(0, 0, 0, 1);
+}
+
+inline B32 Vec4Equals(const Vec4f &a, const Vec4f &b, F32 tolerance = FLOAT_TOLERANCE) {
+	B32 result = ScalarEquals(a.x, b.x, tolerance) &&
+		ScalarEquals(a.y, b.y, tolerance) &&
+		ScalarEquals(a.z, b.z, tolerance) &&
+		ScalarEquals(a.w, b.w, tolerance);
+	return (result);
+}
+
+/* Mat2f */
 
 inline Mat2f Mat2Identity() {
 	Mat2f result;
@@ -414,15 +438,12 @@ inline Mat2f Mat2Mult(const Mat2f &a, const Mat2f &b) {
 	return(result);
 }
 
-inline F32 AxisToAngle(const Vec2f &axis) {
-	F32 result = ATan2(axis.y, axis.x);
+inline F32 Mat2ToAngle(const Mat2f &mat) {
+	F32 result = Vec2AxisToAngle(mat.col1);
 	return(result);
 }
 
-inline F32 Mat2ToAngle(const Mat2f &mat) {
-	F32 result = AxisToAngle(mat.col1);
-	return(result);
-}
+/* Mat4f */
 
 inline Mat4f Mat4Identity() {
 	Mat4f result;
@@ -456,6 +477,8 @@ inline Mat4f Mat4ScaleFromVec3(const Vec3f &s) {
 	return (result);
 }
 
+/* Mat4f overloaded operators */
+
 inline Mat4f operator *(const Mat4f &a, const Mat4f &b) {
 	// http://stackoverflow.com/questions/18499971/efficient-4x4-matrix-multiplication-c-vs-assembly
 	Mat4f result = Mat4Identity();
@@ -471,7 +494,7 @@ inline Mat4f operator *(const Mat4f &a, const Mat4f &b) {
 	return(result);
 }
 
-// Transform functions
+/* Transform */
 
 inline Transform TransformIdentity() {
 	Transform result;
@@ -512,7 +535,7 @@ inline Transform TransformMult(const Transform &a, const Transform &b) {
 	return (result);
 }
 
-// AABB functions
+/* AABB */
 
 inline AABB AABBFromMinMax(const Vec2f &min, const Vec2f &max) {
 	AABB result;
