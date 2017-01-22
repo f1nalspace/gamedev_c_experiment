@@ -42,6 +42,7 @@ struct MouseState {
 };
 
 struct InputState {
+	F32 deltaTime;
 	KeyboardState keyboard;
 	MouseState mouse;
 };

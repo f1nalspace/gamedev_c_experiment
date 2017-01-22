@@ -10,11 +10,14 @@ Notes:
 	To force alignment for a structure to a specific boundary use:
 	#pragma pack(1 or 2 or 4 or 8) and #pragma pack(0) around the struct.
 
+- We use a lot C++ features: Change the compiler to C only - to see which one
+
 Required Optimizations:
 - Support alignent in memory blocks as well, 4 byte alignment by default
 
-Editor:
-- Loading and saving a tilemap with only used tiles to disk
+Game:
+	Editor:
+	- Loading and saving a tilemap with only used tiles to disk
 
 UI:
 - Simple text drawing using STB_truetype

@@ -22,29 +22,35 @@
     <ClInclude Include="engine_types.h">
       <Filter>engine</Filter>
     </ClInclude>
-    <ClInclude Include="editor.h">
-      <Filter>editor</Filter>
-    </ClInclude>
-    <ClInclude Include="editor_internal.h">
-      <Filter>editor</Filter>
-    </ClInclude>
     <ClInclude Include="win32_render_opengl.h" />
     <ClInclude Include="engine_list.h">
       <Filter>engine</Filter>
     </ClInclude>
+    <ClInclude Include="engine_physics.h">
+      <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="game.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="game_internal.h">
+      <Filter>game</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="win32_editor.cpp" />
-    <ClCompile Include="editor.cpp">
-      <Filter>editor</Filter>
-    </ClCompile>
     <ClCompile Include="win32_render_opengl.cpp" />
+    <ClCompile Include="engine_physics.cpp">
+      <Filter>engine</Filter>
+    </ClCompile>
+    <ClCompile Include="game.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="engine">
       <UniqueIdentifier>{7fa917b1-aa39-42a3-8f3e-8fa0002395b9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="editor">
+    <Filter Include="game">
       <UniqueIdentifier>{ea3e02c0-e237-4557-b2a5-281d4945f73a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>

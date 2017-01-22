@@ -101,7 +101,8 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <StructMemberAlignment>1Byte</StructMemberAlignment>
+      <StructMemberAlignment>Default</StructMemberAlignment>
+      <CompileAs>Default</CompileAs>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -145,20 +146,22 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="editor.cpp" />
+    <ClCompile Include="game.cpp" />
+    <ClCompile Include="engine_physics.cpp" />
     <ClCompile Include="win32_render_opengl.cpp" />
     <ClCompile Include="win32_editor.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="editor.h" />
+    <ClInclude Include="game.h" />
     <ClInclude Include="engine_list.h" />
     <ClInclude Include="engine_intrinsics.h" />
     <ClInclude Include="engine_math.h" />
     <ClInclude Include="engine_input.h" />
     <ClInclude Include="engine_memory.h" />
+    <ClInclude Include="engine_physics.h" />
     <ClInclude Include="engine_platform.h" />
     <ClInclude Include="engine_render.h" />
-    <ClInclude Include="editor_internal.h" />
+    <ClInclude Include="game_internal.h" />
     <ClInclude Include="engine_types.h" />
     <ClInclude Include="win32_render_opengl.h" />
   </ItemGroup>

@@ -11,6 +11,7 @@ constant F32 FLOAT_TOLERANCE = 0.00001f;
 
 #define Min(a, b) ((a) < (b) ? (a) : (b))
 #define Max(a, b) ((a) > (b) ? (a) : (b))
+#define Sign(v) ((v) < 0 ?  -1 : 1)
 
 union Vec2i {
 	struct {
@@ -135,6 +136,14 @@ struct Transform {
 	Mat2f rot;
 };
 StaticAlignmentAssert(Transform);
+
+union AABB {
+	struct {
+		Vec2f min, max;
+	};
+	Vec2f e[2];
+};
+StaticAlignmentAssert(AABB);
 
 // Scalar functions
 
@@ -501,4 +510,27 @@ inline Transform TransformMult(const Transform &a, const Transform &b) {
 	result.pos = a.pos + b.pos;
 	result.scale = Vec2Hadamard(a.scale, b.scale);
 	return (result);
+}
+
+// AABB functions
+
+inline AABB AABBFromMinMax(const Vec2f &min, const Vec2f &max) {
+	AABB result;
+	result.min = min;
+	result.max = max;
+	return(result);
+}
+
+inline AABB AABBFromCenterExt(const Vec2f &center, const Vec2f &extend) {
+	AABB result;
+	result.min = center - extend;
+	result.max = center + extend;
+	return(result);
+}
+
+inline AABB AABBCombine(const AABB &a, const AABB &b) {
+	AABB result;
+	result.min = Vec2Min(a.min, b.min);
+	result.max = Vec2Max(a.max, b.max);
+	return(result);
 }

@@ -46,6 +46,9 @@ typedef size_t memory_size;
 #define StaticEnumAssert(type)
 #endif
 
+#define InvalidCodePath Assert(!"InvalidCodePath")
+#define InvalidDefaultCase default: {InvalidCodePath;} break
+
 #define ArrayCount(Array) (sizeof(Array) / sizeof((Array)[0]))
 
 #define SwapPtr(type, a, b) { void* tmp = a; a = b; b = (type*)tmp; }

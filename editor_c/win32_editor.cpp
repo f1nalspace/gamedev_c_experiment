@@ -4,7 +4,7 @@
 #include "engine_platform.h"
 #include "win32_render_opengl.h"
 
-#include "editor.h"
+#include "game.h"
 
 // NOTE(final): WGL definitions
 #define PFNWGLSWAPINTERVALPROC(name) BOOL name(int value)
@@ -251,6 +251,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
 	InputState *newInput = &input[0];
 	InputState *oldInput = &input[1];
 
+	F32 deltaTime = 1.0f / 60.0f;
+
 	globalRunning = true;
 	ShowWindow(windowHandle, nCmdShow);
 	UpdateWindow(windowHandle);
@@ -298,6 +300,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
 				Win32ProcessKeyboardMessage(&newInput->mouse.buttons[buttonIndex], GetKeyState(WinButtonID[buttonIndex]) & (1 << 15));
 			}
 		}
+		newInput->deltaTime = deltaTime;
 
 		// NOTE(final): Update and render editor
 		GameUpdateAndRender(&appState, &renderState, newInput);
