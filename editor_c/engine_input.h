@@ -10,10 +10,12 @@ struct ButtonState {
 
 struct KeyboardState {
 	union {
-		ButtonState space;
-		ButtonState functionkeys[8];
+		ButtonState keys[9];
+		struct {
+			ButtonState functionkeys[8];
+			ButtonState space;
+		};
 	};
-	ButtonState keys[9];
 };
 
 enum MouseButton {
