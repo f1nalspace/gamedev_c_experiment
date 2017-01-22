@@ -3,24 +3,34 @@ Notes:
 	The vc++ compiler fully aligns all structs automatically.
 	There is a "Struct Member Alignment" in the C++ Compiler-Settings.
 
-	This should be enabled sometimes to ensure that contigous used structs are aligned properly -> See: StaticAlignmentAssert
+	This should be enabled sometimes to ensure that contiguous used structs are aligned properly -> See: StaticAlignmentAssert
 
 	B32 is simple a bool, forced to be 4 byte instead of 1 byte to ensure alignment.
 
 	To force alignment for a structure to a specific boundary use:
 	#pragma pack(1 or 2 or 4 or 8) and #pragma pack(0) around the struct.
 
-- We use a lot C++ features: Change the compiler to C only - to see which one
+- We use a lot C++ features: Change the compiler to C only and remove unnecessary features, like operator overloading, const etc.
 
-Required Optimizations:
+Optimizations:
 - Support alignent in memory blocks as well, 4 byte alignment by default
 
+Editor:
+	- Simple ui for selecting brush operations (Add, Remove)
+	- Flood fill (Selectable in UI)
+	- Multiple but fixed tile types (Selectable in UI)
+	- Multiple but fixed layers (Selectable in UI)
+	- Tileset image loading and datasets
+
 Game:
-	Editor:
+	- Smooth transition for in-game camera
+	- Rendering of tiles from a tileset image
 	- Loading and saving a tilemap with only used tiles to disk
 
-UI:
+Renderer:
 - Simple text drawing using STB_truetype
 
 Debug:
-- Add performance measurement block timing mechnism
+	- Add performance measurement block timing mechnism
+	- Render debug text
+	- Draw performance measurement blocks in a useful way
