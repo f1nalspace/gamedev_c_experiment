@@ -148,6 +148,22 @@ internal void Win32ProcessMessages(InputState *input) {
 						case VK_F8:
 							Win32ProcessKeyboardMessage(&input->keyboard.functionkeys[keyCode - VK_F1], isDown);
 							break;
+						case VK_UP:
+						case 'W':
+							Win32ProcessKeyboardMessage(&input->keyboard.moveUp, isDown);
+							break;
+						case VK_DOWN:
+						case 'S':
+							Win32ProcessKeyboardMessage(&input->keyboard.moveDown, isDown);
+							break;
+						case VK_LEFT:
+						case 'A':
+							Win32ProcessKeyboardMessage(&input->keyboard.moveLeft, isDown);
+							break;
+						case VK_RIGHT:
+						case 'D':
+							Win32ProcessKeyboardMessage(&input->keyboard.moveRight, isDown);
+							break;
 						default:
 							break;
 					}

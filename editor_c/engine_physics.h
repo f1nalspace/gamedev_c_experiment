@@ -47,6 +47,7 @@ struct Physics {
 	U32 contactCount;
 
 	U32 bodyIdCounter;
+	Body *bodiesBase;
 	LinkedList<Body> bodyPool;
 	LinkedList<Body> usedBodies;
 	Body *bodies[PHYSICS_MAX_BODY_POOL_COUNT];
@@ -57,6 +58,7 @@ struct Physics {
 
 external void PhysicsInit(Physics *physics, const Vec2f &gravity);
 external void PhysicsUpdate(Physics *physics, InputState *input);
+external void PhysicsClear(Physics *physics);
 
 external Body *PhysicsBodyCreate(Physics *physics, BodyType type, const Vec2f &radius, const Vec2f &pos, F32 density);
 external void PhysicsBodyRemove(Physics *physics, Body *body);

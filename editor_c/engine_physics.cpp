@@ -125,11 +125,26 @@ external void PhysicsBodyRemove(Physics *physics, Body *body) {
 	PhysicsBodiesRefresh(physics);
 }
 
-external void PhysicsInit(Physics *physics, const Vec2f &gravity) {
+external void PhysicsClear(Physics *physics) {
+	ZeroArray(physics->bodiesBase, PHYSICS_MAX_BODY_POOL_COUNT);
 	physics->bodyPool.Init();
-	Body *bodiesForPool = PushArray(&physics->physicsMemory, Body, PHYSICS_MAX_BODY_POOL_COUNT);
 	for (U32 bodyIndex = 0; bodyIndex < PHYSICS_MAX_BODY_POOL_COUNT; ++bodyIndex) {
-		Body *body = bodiesForPool + bodyIndex;
+		Body *body = physics->bodiesBase + bodyIndex;
+		physics->bodyPool.PushBack(body);
+	}
+
+	physics->usedBodies.Init();
+	ZeroArray(physics->bodies, ArrayCount(physics->bodies));
+	physics->bodyCount = 0;
+	physics->bodyIdCounter = 0;
+}
+
+external void PhysicsInit(Physics *physics, const Vec2f &gravity) {
+	physics->bodiesBase = PushArray(&physics->physicsMemory, Body, PHYSICS_MAX_BODY_POOL_COUNT);
+
+	physics->bodyPool.Init();
+	for (U32 bodyIndex = 0; bodyIndex < PHYSICS_MAX_BODY_POOL_COUNT; ++bodyIndex) {
+		Body *body = physics->bodiesBase + bodyIndex;
 		physics->bodyPool.PushBack(body);
 	}
 

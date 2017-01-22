@@ -35,6 +35,7 @@ struct Camera {
 
 struct EditorState {
 	EditorDrawType activeDrawType;
+	Tile *tilesBase;
 	LinkedList<Tile> tilesPool;
 	LinkedList<Tile> usedTiles;
 	Tile *tilesMap[EDITOR_MAX_TILE_MAP_COUNT];

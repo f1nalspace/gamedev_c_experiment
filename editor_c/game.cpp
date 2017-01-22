@@ -2,21 +2,6 @@
 
 #include "game_internal.h"
 
-internal void GameEditorInit(GameState *gameState, EditorState *editor) {
-	editor->camera.offset = V2(0, 0);
-	editor->camera.scale = 1.0f;
-
-	Tile *tilesForPool = PushArray(&gameState->persistentMemory, Tile, EDITOR_MAX_TILE_POOL_CAPACITY);
-	editor->tilesPool.Init();
-	for (U32 tileIndex = 0; tileIndex < EDITOR_MAX_TILE_POOL_CAPACITY; ++tileIndex) {
-		Tile *tile = tilesForPool + tileIndex;
-		editor->tilesPool.PushBack(tile);
-	}
-	editor->usedTiles.Init();
-
-	gameState->editorActive = true;
-}
-
 internal void GameInit(GameState *gameState) {
 	// NOTE(final): Define number of tiles to fit on screen with 100% scale
 	gameState->tileSize = V2(1.0f, 1.0f);
@@ -25,14 +10,29 @@ internal void GameInit(GameState *gameState) {
 
 	gameState->camera.offset = V2(0, 0);
 	gameState->camera.scale = 1.0f;
+	gameState->editor.camera.offset = V2(0, 0);
+	gameState->editor.camera.scale = 1.0f;
 
-	GameEditorInit(gameState, &gameState->editor);
+	gameState->editorActive = true;
 
+	// NOTE(final): Initialize editor tiles
+	gameState->editor.tilesBase = PushArray(&gameState->persistentMemory, Tile, EDITOR_MAX_TILE_POOL_CAPACITY);
+	gameState->editor.tilesPool.Init();
+	for (U32 tileIndex = 0; tileIndex < EDITOR_MAX_TILE_POOL_CAPACITY; ++tileIndex) {
+		Tile *tile = gameState->editor.tilesBase + tileIndex;
+		gameState->editor.tilesPool.PushBack(tile);
+	}
+	gameState->editor.usedTiles.Init();
+
+	// NOTE(final): Init physics system
 	memory_size physicsMemorySize = MegaBytes(32);
 	gameState->physics.physicsMemory = MemoryBlockCreateFrom(&gameState->persistentMemory, physicsMemorySize);
-	PhysicsInit(&gameState->physics, V2(0, -0.1f));
+	PhysicsInit(&gameState->physics, V2(0, -0.25f));
 
-	gameState->playerBody = PhysicsBodyCreate(&gameState->physics, BodyType::BodyType_Dynamic, V2(0.25f, 0.5f), V2(0, 0), 1.0f);
+	// NOTE(final): Add a player dynamic body
+	Vec2f playerExt = V2(0.4f, 0.9f);
+	Vec2f playerPos = V2(0, 0);
+	gameState->playerBody = PhysicsBodyCreate(&gameState->physics, BodyType::BodyType_Dynamic, playerExt, playerPos, 1.0f);
 }
 
 internal Vec2f GameEditorMousePosGet(EditorState *editor, InputState *inputState) {
@@ -154,7 +154,7 @@ external void GameUpdateAndRender(AppState *appState, RenderState *renderState, 
 
 	RenderPushClear(renderState, V4(0, 0, 0, 1));
 
-	if (InputButtonWasDown(inputState->keyboard.space)) {
+	if (InputButtonWasDown(inputState->keyboard.functionkeys[0])) {
 		gameState->editorActive = !gameState->editorActive;
 	}
 
@@ -321,11 +321,27 @@ external void GameUpdateAndRender(AppState *appState, RenderState *renderState, 
 		TemporaryMemoryEnd(&tempMemory);
 
 		// NOTE(final): Draw mouse hover tile
-		Transform mouseTileTransform = TransformMult(TransformMakeTranslation(mouseTilePos), gameState->camera.transform);
+		Transform mouseTileTransform = TransformMult(TransformMakeTranslation(mouseTilePos), editor->camera.transform);
 		RenderPushLines(renderState, mouseTileTransform, ArrayCount(tileBounds), tileBounds, true, V4(1, 1, 0, 1));
-	} else {
-		PhysicsUpdate(&gameState->physics, inputState);
-	}
 
-	GamePhysicsRender(&gameState->physics, renderState, gameState->camera.transform);
+		GamePhysicsRender(&gameState->physics, renderState, editor->camera.transform);
+	} else {
+		F32 moveSpeedX = 0.1f;
+		F32 moveSpeedY = 0.5f;
+		if (InputButtonIsDown(inputState->keyboard.moveRight)) {
+			gameState->playerBody->velocity += V2(1, 0) * moveSpeedX;
+		} else if (InputButtonIsDown(inputState->keyboard.moveLeft)) {
+			gameState->playerBody->velocity += V2(-1, 0) * moveSpeedX;
+		}
+		if (InputButtonIsDown(inputState->keyboard.moveUp)) {
+			gameState->playerBody->velocity += V2(0, 1) * moveSpeedY;
+		} else if (InputButtonIsDown(inputState->keyboard.moveDown)) {
+			gameState->playerBody->velocity += V2(0, -1) * moveSpeedY;
+		}
+
+		gameState->camera.offset = -gameState->playerBody->position;
+
+		PhysicsUpdate(&gameState->physics, inputState);
+		GamePhysicsRender(&gameState->physics, renderState, gameState->camera.transform);
+	}
 }

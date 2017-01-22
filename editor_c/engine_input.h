@@ -10,8 +10,12 @@ struct ButtonState {
 
 struct KeyboardState {
 	union {
-		ButtonState keys[9];
+		ButtonState keys[13];
 		struct {
+			ButtonState moveUp;
+			ButtonState moveDown;
+			ButtonState moveLeft;
+			ButtonState moveRight;
 			ButtonState functionkeys[8];
 			ButtonState space;
 		};
