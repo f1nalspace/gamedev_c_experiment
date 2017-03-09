@@ -2,7 +2,11 @@
 #include <gl\gl.h>
 
 #include "engine_platform.h"
+#include "engine_debug.h"
+
 #include "win32_render_opengl.h"
+
+#include "engine_debug_internal.h"
 
 #include "game.h"
 
@@ -12,7 +16,22 @@ typedef PFNWGLSWAPINTERVALPROC(wgl_swap_interval);
 
 // NOTE(final): Global variables
 global_variable B32 globalRunning;
+global_variable S64 globalPerfCounterFrequency;
 global_variable wgl_swap_interval *wglSwapIntervalEXT;
+
+DebugTable *globalDebugTable = 0;
+DebugMemory *globalDebugMemory = 0;
+
+inline LARGE_INTEGER Win32GetWallClock() {
+	LARGE_INTEGER result;
+	QueryPerformanceCounter(&result);
+	return(result);
+}
+
+inline F32 Win32GetSecondsElapsed(LARGE_INTEGER start, LARGE_INTEGER end) {
+	F32 result = (F32)(end.QuadPart - start.QuadPart) / (F32)globalPerfCounterFrequency;
+	return(result);
+}
 
 internal B32 Win32SetPixelFormat(HDC deviceContext) {
 	PIXELFORMATDESCRIPTOR pfd = {};
@@ -207,6 +226,13 @@ LRESULT CALLBACK Win32MessageProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 #define EDITOR_SCREEN_HEIGHT 720
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nCmdShow) {
+	LARGE_INTEGER perfCounterFreqResult;
+	QueryPerformanceFrequency(&perfCounterFreqResult);
+	globalPerfCounterFrequency = perfCounterFreqResult.QuadPart;
+
+	U32 desiredSchedulerMS = 1;
+	B32 sleepIsGranular = timeBeginPeriod(desiredSchedulerMS) == TIMERR_NOERROR;
+
 	WNDCLASSEX wcex = {};
 	wcex.cbSize = sizeof(WNDCLASSEX);
 	wcex.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
@@ -240,6 +266,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
 		return -1;
 	}
 
+	// Get monitor/game refresh rate in hz
+	int monitorRefreshHz = 60;
+	int refreshRate = GetDeviceCaps(deviceContext, VREFRESH);
+	if (refreshRate > 1) {
+		monitorRefreshHz = refreshRate;
+	}
+	F32 gameUpdateHz = (F32)monitorRefreshHz;
+	F32 targetSecondsPerFrame = 1.0f / gameUpdateHz;
+
 	AppState appState = {};
 	appState.renderStorageSize = RENDER_MAX_COMMAND_COUNT * sizeof(RenderCommand);
 	appState.persistentStorageSize = MegaBytes(500LL);
@@ -263,16 +298,29 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
 	renderState.commandCapacity = RENDER_MAX_COMMAND_COUNT;
 	renderState.commands = PushArray(&renderMemory, RenderCommand, RENDER_MAX_COMMAND_COUNT);
 
+	void *debugTableBase = VirtualAlloc(0, sizeof(DebugTable), MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+	globalDebugTable = (DebugTable *)debugTableBase;
+
+	DebugMemory debugMemory = {};
+	debugMemory.storageSize = GigaBytes(1LL);
+	debugMemory.storageBase = VirtualAlloc(0, debugMemory.storageSize, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+	globalDebugMemory = &debugMemory;
+	DEBUGInit();
+
 	InputState input[2] = {};
 	InputState *newInput = &input[0];
 	InputState *oldInput = &input[1];
 
 	F32 deltaTime = 1.0f / 60.0f;
 
+	LARGE_INTEGER flipWallClock = Win32GetWallClock();
+	LARGE_INTEGER lastCounter = Win32GetWallClock();
+
 	globalRunning = true;
 	ShowWindow(windowHandle, nCmdShow);
 	UpdateWindow(windowHandle);
 	while (globalRunning) {
+		BEGIN_BLOCK("Input processing");
 		RECT windowSize;
 		GetClientRect(windowHandle, &windowSize);
 		renderState.screenSize.w = (windowSize.right - windowSize.left) + 1;
@@ -317,21 +365,53 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
 			}
 		}
 		newInput->deltaTime = deltaTime;
+		END_BLOCK();
 
 		// NOTE(final): Update and render editor
+		BEGIN_BLOCK("Game Update And Render");
 		GameUpdateAndRender(&appState, &renderState, newInput);
+		END_BLOCK();
 
 		// NOTE(final): Render frame
+		BEGIN_BLOCK("Render Commands");
 		Win32RenderOpenGL(&renderState);
+		END_BLOCK();
 
-		// NOTE(final): Present frame
+		BEGIN_BLOCK("FrameSleep");
+		LARGE_INTEGER workCounter = Win32GetWallClock();
+		F32 workSecondsElapsed = Win32GetSecondsElapsed(lastCounter, workCounter);
+
+		F32 secondsElapsedForFrame = workSecondsElapsed;
+		if (secondsElapsedForFrame < targetSecondsPerFrame) {
+			while (secondsElapsedForFrame < targetSecondsPerFrame) {
+				if (sleepIsGranular) {
+					DWORD sleepMS = (DWORD)(1000.0f * (targetSecondsPerFrame - secondsElapsedForFrame));
+					Sleep(sleepMS);
+				}
+				secondsElapsedForFrame = Win32GetSecondsElapsed(lastCounter, Win32GetWallClock());
+			}
+		} else {
+			// TODO(final): Missed framerate here
+			// TODO(final): Logging
+		}
+		END_BLOCK();
+
+		// NOTE(final): Present frame and swap input
+		BEGIN_BLOCK("Present Frame");
 		SwapBuffers(deviceContext);
+		flipWallClock = Win32GetWallClock();
+		END_BLOCK();
 
-		// NOTE(final): Reset render commands for next frame
+		// NOTE(final): Prepare states for next frame
 		renderState.commandCount = 0;
-
-		// NOTE(final): Swap input state for next frame
 		SwapPtr(InputState, newInput, oldInput);
+
+		// NOTE(final): Finalize Frame
+		LARGE_INTEGER endCounter = Win32GetWallClock();
+		FRAME_MARKER(Win32GetSecondsElapsed(lastCounter, endCounter));
+		lastCounter = endCounter;
+
+		DEBUGFrameEnd();
 	}
 
 	Win32OpenGLRelease(&renderingContext);
@@ -340,6 +420,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
 	DestroyWindow(windowHandle);
 	UnregisterClass(wcex.lpszClassName, wcex.hInstance);
 
+	VirtualFree(globalDebugTable, 0, MEM_RELEASE);
 	VirtualFree(appMemoryBase, 0, MEM_RELEASE);
 
 	return 0;
