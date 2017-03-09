@@ -107,7 +107,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -146,12 +146,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="engine_debug_internal.cpp" />
+    <ClCompile Include="engine_physics_collision.cpp" />
     <ClCompile Include="game.cpp" />
     <ClCompile Include="engine_physics.cpp" />
+    <ClCompile Include="win32_main.cpp" />
     <ClCompile Include="win32_render_opengl.cpp" />
-    <ClCompile Include="win32_editor.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="engine_debug.h" />
+    <ClInclude Include="engine_debug_internal.h" />
+    <ClInclude Include="engine_physics_collision.h" />
+    <ClInclude Include="engine_physics_contact.h" />
+    <ClInclude Include="engine_physics_shapes.h" />
     <ClInclude Include="game.h" />
     <ClInclude Include="engine_list.h" />
     <ClInclude Include="engine_intrinsics.h" />

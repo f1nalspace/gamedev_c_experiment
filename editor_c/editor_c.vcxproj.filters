@@ -35,15 +35,36 @@
     <ClInclude Include="game_internal.h">
       <Filter>game</Filter>
     </ClInclude>
+    <ClInclude Include="engine_debug.h">
+      <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="engine_debug_internal.h">
+      <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="engine_physics_collision.h">
+      <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="engine_physics_contact.h">
+      <Filter>engine</Filter>
+    </ClInclude>
+    <ClInclude Include="engine_physics_shapes.h">
+      <Filter>engine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="win32_editor.cpp" />
     <ClCompile Include="win32_render_opengl.cpp" />
     <ClCompile Include="engine_physics.cpp">
       <Filter>engine</Filter>
     </ClCompile>
     <ClCompile Include="game.cpp">
       <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="win32_main.cpp" />
+    <ClCompile Include="engine_debug_internal.cpp">
+      <Filter>engine</Filter>
+    </ClCompile>
+    <ClCompile Include="engine_physics_collision.cpp">
+      <Filter>engine</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
